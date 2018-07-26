@@ -2,6 +2,7 @@ package ac.cr.ucenfotec.encripcion;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.Base64.Encoder;
 
 import javax.crypto.Cipher;
 
-public class EstrategiaEncripcionRSA extends EstrategiaEncripcion{
+public class EstrategiaEncripcionRSA extends EstrategiaEncripcionAsimetrica{
 
 	private final String PUBLIC = "public";
 	private final String PRIVATE = "private";
@@ -57,20 +58,26 @@ public class EstrategiaEncripcionRSA extends EstrategiaEncripcion{
 	}
 	
 	@Override
-	public void decryptMessage(String messageName, String keyName) throws Exception {
+	public String decryptMessage(String messageName, String keyName) throws Exception {
 		PrivateKey privKey = (PrivateKey)readKeyFromFile(keyName, PRIVATE);
 		Cipher cipher = Cipher.getInstance("RSA");
 		cipher.init(Cipher.DECRYPT_MODE, privKey);
 		byte[] encryptedMessage = readMessageFile(messageName);
 		byte[] decryptedData = cipher.doFinal(encryptedMessage);
 	    String message = new String(decryptedData,StandardCharsets.UTF_8);
-	    System.out.println("El mensaje era: ");
-		System.out.println(message);
+		return message;
 	}
 	
 	public void saveToFile(String fileName,BigInteger mod, BigInteger exp) throws IOException {
+		
+		File file = new File(fileName);
+		if (!file.getParentFile().exists()) {
+			file.getParentFile().mkdirs();
+		}
+		
 		ObjectOutputStream oout = new ObjectOutputStream(
 			    new BufferedOutputStream(new FileOutputStream(fileName)));
+				
 		try {
 			oout.writeObject(mod);
 			oout.writeObject(exp);
